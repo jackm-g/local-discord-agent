@@ -4,24 +4,10 @@ This project consists of two main components:
 1. A Python FastAPI application for handling agent functionality
 2. A Discord bot built with Node.js for user interaction
 
-## Project Structure
-
-```
-.
-├── basicagent/           # Python FastAPI Application
-│   ├── fast_memory.py    # Core agent functionality
-│   ├── requirements.txt  # Python dependencies
-│   └── .env             # Environment variables for Python app
-│
-└── discord-llm-bot/      # Discord Bot Application
-    ├── app.js           # Main bot application
-    ├── package.json     # Node.js dependencies
-    └── .env             # Environment variables for Discord bot
-```
 
 ## Prerequisites
 
-- Python 3.8 or higher
+- Python 3.12 or higher
 - Node.js 18.x or higher
 - npm (Node Package Manager)
 - A Discord application and bot token
@@ -121,10 +107,6 @@ Required environment variables for the Discord bot:
 - The Python application uses FastAPI for the backend API
 - The Discord bot uses discord.js for Discord integration
 - Both applications should be running simultaneously for full functionality
-
-## License
-
-This project is proprietary and not licensed for public use.
 
 ## Author
 
