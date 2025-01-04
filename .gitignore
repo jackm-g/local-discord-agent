@@ -65,7 +65,7 @@ Thumbs.db
 model/
 models/
 checkpoints/
-.env.*
+
 
 # Testing
 .coverage
