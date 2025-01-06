@@ -4,6 +4,8 @@ This project consists of two main components:
 1. A Python FastAPI application for handling agent functionality
 2. A Discord bot built with Node.js for user interaction
 
+![conv_demo](assets/conv_demo.png)
+
 
 ## Prerequisites
 
