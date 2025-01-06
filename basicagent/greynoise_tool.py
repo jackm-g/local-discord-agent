@@ -10,6 +10,7 @@ import json
 
 load_dotenv()
 API_KEY = os.getenv("GREYNOISE_API_KEY")
+KEYS_TO_KEEP = ["ip", "seen", "classification", "first_seen", "last_seen", "tags", "metadata"]
 
 def get_ip_info(ip_address):
     """
@@ -18,8 +19,9 @@ def get_ip_info(ip_address):
     try:
         api_client = GreyNoise(api_key=API_KEY)
         response = api_client.ip(ip_address)
-        print(response)
-        json_data = json.dumps(response)
+        filtered_data = {key: response[key] for key in KEYS_TO_KEEP if key in response}
+        json_data = json.dumps(filtered_data)
+        print(json_data)
         return json_data
     
     # TODO: RateLimitError and NotFound Error from greynoise package
@@ -37,8 +39,10 @@ def get_ip_greynoise_community(ip_address: str):
 @tool
 def greynoise_ip_address_tool(ip_address: str):
     """Get the greynoise data for the given ip address"""
-    #TODO: Switch once API key is purchased.
-    return get_ip_greynoise_community(ip_address)
+    if API_KEY is not None:
+        return get_ip_info(ip_address)
+    else:
+        return get_ip_greynoise_community(ip_address)
 
 if __name__ == "__main__":
-    print(get_ip_info("8.8.8.8"))
+    print(get_ip_info("165.154.40.205"))

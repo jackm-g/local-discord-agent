@@ -8,8 +8,6 @@ A FastAPI-based chat agent that uses Ollama for LLM interactions and MongoDB for
 - Ollama integration for LLM capabilities
 - MongoDB-based conversation state persistence
 - Configurable chat personality and response style
-- Error handling and logging
-- Type-safe implementation
 
 ## Prerequisites
 
@@ -74,10 +72,7 @@ Process a chat message and get AI response.
 
 ## Development
 
-- The main application logic is in `fast_memory.py`
+- The main application logic is in `fast_agent.py`
 - Environment variables are managed through `.env`
 - Logging is configured at the INFO level
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details. 
