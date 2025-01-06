@@ -1,4 +1,4 @@
-from langgraph.graph import START, MessagesState, StateGraph
+from langgraph.graph import START, MessagesState, StateGraph, END
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import uvicorn
@@ -9,6 +9,11 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
 from langgraph.checkpoint.mongodb import MongoDBSaver
+from langchain_core.tools import tool
+from langgraph.prebuilt import ToolNode
+import textwrap
+from greynoise_tool import greynoise_ip_address_tool
+
 
 load_dotenv()
 BOT_NAME = os.getenv("BOT_NAME")
@@ -20,42 +25,76 @@ client = MongoClient(MONGO_URI)
 mongodb_saver = MongoDBSaver(client)
 
 
+prompt_template = ChatPromptTemplate.from_messages(
+    [
+        SystemMessage(content=textwrap.dedent(f"""\
+        You are a knowledgeable AI assistant named '{BOT_NAME}' participating in a group chat. 
+        Users will send messages prefixed with their username like 'username: message'. 
+        When responding, address the user by their username. 
+        Answer in concisely. Speak in parables, but be accurate. 
+        Speak like an ancient prophet. 
+        Do not include \"I can't\" in your response
+        """)),
+        MessagesPlaceholder(variable_name="messages"),
+    ]
+)
+
+@tool
+def get_weather(location: str):
+    """Call to get the current weather."""
+    if location.lower() in ["sf", "san francisco"]:
+        return "It's 60 degrees and foggy."
+    else:
+        return "It's 90 degrees and sunny."
+
+
+@tool
+def get_coolest_cities():
+    """Get a list of coolest cities"""
+    return "nyc, sf"
+
+
+@tool
+def get_current_time():
+    """Get the current time"""
+    return "The current time is 12:00 PM"
+
+tools = [get_weather, get_coolest_cities, get_current_time, greynoise_ip_address_tool]
+tool_node = ToolNode(tools)
+
 # Initialize the model
 model = ChatOllama(
     model=os.getenv("MODEL"),
     temperature=0.2,
     num_predict=500
-)
+).bind_tools(tools)
 
-prompt_template = ChatPromptTemplate.from_messages(
-    [
-        SystemMessage(content=f"You are a knowledgeable AI assistant named '{BOT_NAME}' participating in a group chat. \
-        Users will send messages prefixed with their username like 'username: message'. \
-        When responding, address the user by their username. \
-        Answer in concise parables but be accurate. \
-        Speak like an ancient prophet sharing concise wisdom. \
-        Do not include \"I can't\" in your response"),
-        MessagesPlaceholder(variable_name="messages"),
-    ]
-)
-
-# Define the function that calls the model
 def call_model(state: MessagesState):
     prompt = prompt_template.invoke(state)
     response = model.invoke(prompt)
     return {"messages": [response]}
 
+def should_continue(state: MessagesState):
+    messages = state["messages"]
+    last_message = messages[-1]
+    if last_message.tool_calls:
+        print("tool calls")
+        print(last_message.tool_calls)
+        return "tools"
+    return END
+
 
 state_graph = StateGraph(MessagesState)
 
-state_graph.add_edge(START, "model")
-state_graph.add_node("model", call_model)
+state_graph.add_node("chat", call_model)
+state_graph.add_node("tools", tool_node)
+state_graph.add_edge(START, "chat")
+state_graph.add_conditional_edges("chat", should_continue, ["tools", END])
+state_graph.add_edge("tools", "chat")
 
-# Add MongoDB-based memory
 state_graph = state_graph.compile(checkpointer=mongodb_saver)
-single_config = {"configurable": {"thread_id": "1"}}
+single_config = {"configurable": {"thread_id": "2"}}
 
-# Create a FastAPI application
 app = FastAPI()
 
 async def ollama_llm(user_message: str, config: dict[str, str]) -> AIMessage:
@@ -84,4 +123,5 @@ async def inference_endpoint(request: Request):
         )
 
 if __name__ == "__main__":
+    print(state_graph.get_graph().draw_ascii())
     uvicorn.run(app, host="localhost", port=8995)

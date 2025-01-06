@@ -3,7 +3,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
-from fast_memory import app
+from basicagent.fast_agent import app
 
 client = TestClient(app)
 
