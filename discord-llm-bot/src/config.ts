@@ -34,6 +34,9 @@ export const PIXELLAB_API_KEY = process.env.PIXELLAB_API_KEY!;
 // GreyNoise configuration
 export const GREYNOISE_API_KEY = process.env.GREYNOISE_API_KEY;
 
+// X.AI Image Generation configuration (uses same API key as Grok)
+export const XAI_API_KEY = GROK_API_KEY;
+
 // Error messages
 export const ERROR_MESSAGE =
   process.env.ERROR_MESSAGE ||
@@ -66,6 +69,15 @@ export const MCP_SERVERS: MCPServerConfig[] = [
       GREYNOISE_API_KEY: GREYNOISE_API_KEY || "",
     },
     tools: ["get_weather", "get_coolest_cities", "get_current_time", "greynoise_ip_address"],
+  },
+  {
+    name: "xai-image",
+    command: "node",
+    args: [join(projectRoot, "mcp-servers/xai-image/dist/server.js")],
+    env: {
+      XAI_API_KEY: XAI_API_KEY,
+    },
+    tools: ["generate_image"],
   },
 ];
 

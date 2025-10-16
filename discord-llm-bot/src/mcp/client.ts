@@ -176,6 +176,11 @@ export class MCPClientManager {
             if (parsed.animationUrl) {
               imageUrl = parsed.animationUrl;
             }
+            // Handle X.AI image results
+            if (parsed.success && parsed.images && parsed.images.length > 0) {
+              imageUrl = parsed.images[0].url;
+              metadata = parsed; // Keep the full result for X.AI images
+            }
           } catch {
             // Not JSON, just keep as text
           }

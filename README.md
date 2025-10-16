@@ -25,14 +25,21 @@ TypeScript MCP server for sprite generation:
 - 🎬 Animate sprites with customizable FPS
 - 🔐 Secure PixelLab API integration
 
-### 3. **Python Tools MCP Server** (`mcp-servers/tools-python/`)
+### 3. **X.AI Image Generation MCP Server** (`mcp-servers/xai-image/`)
+TypeScript MCP server for X.AI image generation:
+- 🎨 Generate high-quality images using Grok-2-Vision-1212
+- 🖼️ Support for multiple image sizes and styles
+- ⚡ Fast image generation with quality options
+- 🔐 Secure X.AI API integration
+
+### 4. **Python Tools MCP Server** (`mcp-servers/tools-python/`)
 Python MCP server wrapping utility tools:
 - 🌤️ Weather information
 - ⏰ Current time
 - 🔍 GreyNoise IP intelligence
 - 🏙️ Coolest cities lookup
 
-### 4. **Legacy Agent** (`basicagent/` - archived)
+### 5. **Legacy Agent** (`basicagent/` - archived)
 Previous LangGraph-based implementation (kept for reference)
 
 ## Architecture
@@ -48,11 +55,12 @@ Discord Bot (TypeScript)
      ↓
   [MCP Client] → stdio connections
      ↓
-  ┌─────────────┴──────────────┐
-  ↓                            ↓
-PixelLab MCP Server    Python Tools MCP Server
-  ↓                            ↓
-PixelLab API               Utility Functions
+  ┌─────────────┬─────────────┬─────────────┐
+  ↓             ↓             ↓
+PixelLab MCP    X.AI Image    Python Tools
+Server          MCP Server    MCP Server
+  ↓             ↓             ↓
+PixelLab API    X.AI API      Utility Functions
 ```
 
 ## Prerequisites
@@ -60,7 +68,7 @@ PixelLab API               Utility Functions
 - **Node.js 18.x+** and **TypeScript**
 - **Python 3.8+** (for Python tools MCP server)
 - **MongoDB** (local or remote instance)
-- **Grok API Key** (from x.AI)
+- **Grok API Key** (from x.AI) - used for both LLM and image generation
 - **Discord Bot Token** (from Discord Developer Portal)
 - **PixelLab API Key** (for sprite generation)
 - **GreyNoise API Key** (optional, for IP intelligence)
@@ -97,6 +105,21 @@ cp .env.example .env
 npm run build
 ```
 
+**X.AI Image Generation MCP Server:**
+```bash
+cd mcp-servers/xai-image
+
+# Install dependencies
+npm install
+
+# Configure
+cp env.example .env
+# Note: XAI_API_KEY will be automatically set from GROK_API_KEY
+
+# Build
+npm run build
+```
+
 **Python Tools MCP Server:**
 ```bash
 cd mcp-servers/tools-python
@@ -122,7 +145,7 @@ cp .env.example .env
 # Edit .env with your credentials:
 # - DISCORD_TOKEN
 # - APP_ID
-# - GROK_API_KEY
+# - GROK_API_KEY (used for both LLM and image generation)
 # - MONGO_URI
 # - PIXELLAB_API_KEY
 
@@ -142,6 +165,7 @@ npm start
 ```
 @YourBot what's the weather in San Francisco?
 @YourBot make me a 32x32 pixel art knight
+@YourBot generate an image of a sunset over mountains
 @YourBot check IP 8.8.8.8
 ```
 
@@ -179,6 +203,13 @@ The bot will:
 - ✅ **Sprite Rotation** - Multi-angle sprite sheets
 - ✅ **Sprite Animation** - Animated GIFs with customizable FPS
 - ✅ **Slash Commands** - `/sprite`, `/rotate`, `/animate`
+
+### X.AI Image Generation
+- ✅ **High-Quality Images** - Generate realistic images using Grok-2-Vision-1212
+- ✅ **Multiple Sizes** - Square, portrait, and landscape formats
+- ✅ **Style Options** - Vivid or natural image styles
+- ✅ **Quality Control** - Standard or HD quality options
+- ✅ **Multiple Images** - Generate up to 4 variations at once
 
 ### Utility Tools
 - ✅ **Weather Information** - Location-based weather
@@ -248,6 +279,14 @@ Docker Compose configuration for easy deployment is planned for future updates.
 |----------|----------|-------------|
 | `PIXELLAB_API_KEY` | ✅ Yes | Your PixelLab API key |
 | `PIXELLAB_BASE_URL` | No | Custom API URL (optional) |
+
+### `mcp-servers/xai-image/.env`
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `XAI_API_KEY` | ✅ Yes | Your X.AI API key (same as GROK_API_KEY) |
+
+**Note:** The Discord bot automatically passes the `GROK_API_KEY` as `XAI_API_KEY` to this server, so you don't need to set it manually.
 
 ### `mcp-servers/tools-python/.env`
 

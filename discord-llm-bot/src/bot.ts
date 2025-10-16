@@ -160,7 +160,12 @@ async function processMessage(
             }
           }
           
-          response += `\n\n🖼️SPRITE_RESULT🖼️${JSON.stringify(flatMetadata)}`;
+          // Use different markers for different image types
+          if (plan.tool === "generate_image") {
+            response += `\n\n🖼️XAI_IMAGE_RESULT🖼️${JSON.stringify(flatMetadata)}`;
+          } else {
+            response += `\n\n🖼️SPRITE_RESULT🖼️${JSON.stringify(flatMetadata)}`;
+          }
         }
       } else {
         response = `I tried to help, but ran into an issue: ${toolResult.error}\n\nThe prophecy remains unclear... 🔮`;
@@ -320,6 +325,10 @@ client.on(Events.MessageCreate, async (message: Message) => {
     const spriteMarker = "🖼️SPRITE_RESULT🖼️";
     const spriteIndex = response.lastIndexOf(spriteMarker); // Use last occurrence
     
+    // Check if response contains X.AI image result metadata
+    const xaiImageMarker = "🖼️XAI_IMAGE_RESULT🖼️";
+    const xaiImageIndex = response.lastIndexOf(xaiImageMarker);
+    
     if (spriteIndex !== -1) {
       try {
         // Extract JSON string after the marker
@@ -408,6 +417,61 @@ client.on(Events.MessageCreate, async (message: Message) => {
         // Fallback: remove everything from the sprite marker onward
         const cleanResponse = cleanSpriteMarkers(response);
         await message.reply(cleanResponse || "Your sprite has been created, but I had trouble formatting the result!");
+      }
+    } else if (xaiImageIndex !== -1) {
+      try {
+        // Extract JSON string after the X.AI image marker
+        const jsonStart = xaiImageIndex + xaiImageMarker.length;
+        const afterMarker = response.substring(jsonStart);
+        
+        // Find the end of the JSON - look for the next marker or newline followed by non-JSON
+        const nextMarker = afterMarker.indexOf(xaiImageMarker);
+        const jsonString = nextMarker !== -1 
+          ? afterMarker.substring(0, nextMarker).trim()
+          : afterMarker.trim();
+        
+        // Parse the X.AI image data
+        const imageData = JSON.parse(jsonString);
+        
+        // Get text before the marker
+        const textResponse = response.substring(0, xaiImageIndex).trim();
+        
+        console.log("✅ Successfully parsed X.AI image result, creating embed...");
+        
+        // Handle X.AI image results
+        if (imageData.success && imageData.images && imageData.images.length > 0) {
+          const images = imageData.images;
+          const primaryImage = images[0];
+          
+          // Create embed for X.AI image
+          const embed = new EmbedBuilder()
+            .setColor(0x00d4aa) // X.AI brand color
+            .setTitle("🎨 Image Generated!")
+            .setDescription(cleanSpriteMarkers(textResponse) || "Your image has been created using X.AI's Grok-2-Vision-1212!")
+            .setImage(primaryImage.url);
+          
+          // If there are multiple images, add them as additional embeds
+          const embeds = [embed];
+          
+          for (let i = 1; i < images.length && i < 4; i++) { // Discord allows max 4 embeds
+            const additionalEmbed = new EmbedBuilder()
+              .setColor(0x00d4aa)
+              .setTitle(`🎨 Image ${i + 1}`)
+              .setImage(images[i].url);
+            embeds.push(additionalEmbed);
+          }
+          
+          await message.reply({ embeds });
+        } else {
+          // Error case
+          const errorMessage = imageData.error || "Failed to generate image";
+          await message.reply(`I tried to generate an image, but encountered an issue: ${errorMessage}`);
+        }
+      } catch (e) {
+        console.error("⚠️ Failed to parse X.AI image result, showing clean fallback:", e);
+        // Fallback: remove everything from the X.AI image marker onward
+        const cleanResponse = response.substring(0, xaiImageIndex).trim();
+        await message.reply(cleanResponse || "Your image has been generated, but I had trouble formatting the result!");
       }
     } else {
       // Reply with plain text (clean any sprite markers)
