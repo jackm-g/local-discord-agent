@@ -1,27 +1,32 @@
 {
   "name": "discord-llm-bot",
   "private": true,
-  "version": "1.0.0",
-  "description": "Discord Bot",
-  "main": "app.js",
+  "version": "2.0.0",
+  "description": "Discord Bot with MCP orchestration and Grok planning",
+  "main": "dist/bot.js",
   "type": "module",
   "engines": {
     "node": ">=18.x"
   },
   "scripts": {
-    "start": "node app.js",
-    "register": "node commands.js",
-    "dev": "nodemon app.js"
+    "build": "tsc",
+    "start": "node dist/bot.js",
+    "dev": "tsc && node dist/bot.js",
+    "watch": "tsc --watch"
   },
   "author": "Jack",
   "license": "None",
   "dependencies": {
-    "discord-interactions": "^4.0.0",
+    "@modelcontextprotocol/sdk": "^1.0.4",
     "discord.js": "^14.17.2",
-    "dotenv": "^16.0.3",
-    "express": "^4.18.2"
+    "dotenv": "^16.4.5",
+    "mongodb": "^6.3.0",
+    "zod": "^3.23.8",
+    "axios": "^1.7.2"
   },
   "devDependencies": {
+    "@types/node": "^20.14.2",
+    "typescript": "^5.4.5",
     "nodemon": "^3.0.0"
   }
 }

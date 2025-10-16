@@ -1,0 +1,25 @@
+{
+  "name": "pixellab-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server for PixelLab sprite generation API",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "tsc && node dist/server.js",
+    "watch": "tsc --watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
+    "gifenc": "^1.0.3",
+    "sharp": "^0.34.4",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "typescript": "^5.4.5"
+  }
+}

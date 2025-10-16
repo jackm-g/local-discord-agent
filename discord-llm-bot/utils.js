@@ -31,29 +31,72 @@ export async function DiscordRequest(endpoint, options) {
   return res;
 }
 
-export async function LLMRequest(options) {
-  const url = 'http://localhost:8995/inference';
+export async function LLMRequest(options, retries = 3) {
+  const baseUrl = process.env.AGENT_URL || 'http://localhost:8995';
+  const url = `${baseUrl}/inference`;
   
   options.body = JSON.stringify(options.body);
   
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8'
+        },
+        ...options
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        console.error(`LLM Request failed (attempt ${attempt}/${retries}):`, res.status, data);
+        
+        // Don't retry on client errors (4xx), only server errors (5xx)
+        if (res.status < 500) {
+          throw new Error(`Agent returned error: ${data.error || 'Unknown error'}`);
+        }
+        
+        if (attempt === retries) {
+          throw new Error(`Agent returned error after ${retries} attempts: ${data.error || 'Unknown error'}`);
+        }
+        
+        // Wait before retry (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        continue;
+      }
+
+      return await res.json();
+    } catch (err) {
+      if (attempt === retries) {
+        console.error('LLM Request failed after all retries:', err.message);
+        throw err;
+      }
+      
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+    }
+  }
+}
+
+export async function checkAgentHealth() {
+  const baseUrl = process.env.AGENT_URL || 'http://localhost:8995';
+  const url = `${baseUrl}/health`;
+  
   try {
     const res = await fetch(url, {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json; charset=UTF-8'
-      },
-      ...options
+        'Content-Type': 'application/json'
+      }
     });
-
+    
     if (!res.ok) {
-      const data = await res.json();
-      console.log(res.status);
-      throw new Error(JSON.stringify(data));
+      return { healthy: false, error: `Health check returned status ${res.status}` };
     }
-
-    return await res.json();
+    
+    const data = await res.json();
+    return { healthy: data.status === 'healthy', data };
   } catch (err) {
-    console.error('LLM Request failed:', err);
-    throw err;
+    return { healthy: false, error: err.message };
   }
 }
 
