@@ -39,14 +39,13 @@ const xaiClient = new XAIImageClient(XAI_API_KEY, XAI_BASE_URL);
 const TOOLS: Tool[] = [
   {
     name: "generate_image",
-    description: `Generate high-quality images using X.AI's Grok-2-Vision-1212 model.
+    description: `Generate high-quality images using X.AI's image generation API.
 
 **When to use this:**
 - Creating realistic images, artwork, or illustrations
 - Need high-quality images with detailed prompts
 - Want to generate multiple variations of an image
 - Creating images for presentations, social media, or creative projects
-- Need images with specific styles (vivid or natural)
 
 **Example use cases:** "Create a photo of a sunset over mountains", "Generate a digital painting of a fantasy castle", "Make a professional headshot of a business person"`,
     inputSchema: {
@@ -58,30 +57,22 @@ const TOOLS: Tool[] = [
           minLength: 1,
           maxLength: 4000,
         },
-        size: {
-          type: "string",
-          enum: ["1024x1024", "1024x1792", "1792x1024"],
-          description: "Image size - square (1024x1024), portrait (1024x1792), or landscape (1792x1024)",
-          default: "1024x1024",
-        },
-        quality: {
-          type: "string",
-          enum: ["standard", "hd"],
-          description: "Image quality - standard or high definition",
-          default: "standard",
-        },
-        style: {
-          type: "string",
-          enum: ["vivid", "natural"],
-          description: "Image style - vivid (more dramatic) or natural (more realistic)",
-          default: "vivid",
-        },
         n: {
           type: "number",
-          description: "Number of images to generate (1-4)",
+          description: "Number of images to generate (1-10)",
           minimum: 1,
-          maximum: 4,
+          maximum: 10,
           default: 1,
+        },
+        response_format: {
+          type: "string",
+          enum: ["url", "b64_json"],
+          description: "Response format - url (default) or b64_json for base64 encoded image",
+          default: "url",
+        },
+        user: {
+          type: "string",
+          description: "Unique identifier for the user (optional)",
         },
       },
       required: ["prompt"],

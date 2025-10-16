@@ -14,7 +14,7 @@ export class XAIImageClient {
   }
 
   /**
-   * Generate an image using X.AI's Grok-2-Vision-1212 model
+   * Generate an image using X.AI's image generation API
    */
   async generateImage(args: GenerateImageArgs): Promise<ImageGenerationResult> {
     try {
@@ -27,10 +27,9 @@ export class XAIImageClient {
         body: JSON.stringify({
           model: "grok-2-vision-1212",
           prompt: args.prompt,
-          size: args.size,
-          quality: args.quality,
-          style: args.style,
           n: args.n,
+          response_format: args.response_format,
+          user: args.user,
         }),
       });
 

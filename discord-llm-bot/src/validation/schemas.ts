@@ -50,6 +50,14 @@ export const GreynoiseIpAddressArgsSchema = z.object({
   ip_address: z.string().regex(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/),
 });
 
+// X.AI Image Generation tool schema
+export const GenerateImageArgsSchema = z.object({
+  prompt: z.string().min(1).max(4000),
+  n: z.number().int().min(1).max(10).optional(),
+  response_format: z.enum(["url", "b64_json"]).optional(),
+  user: z.string().optional(),
+});
+
 // Tool plan schema (from Grok)
 export const ToolPlanSchema = z.object({
   useTool: z.boolean(),
@@ -68,6 +76,7 @@ export const TOOL_SCHEMAS: Record<string, z.ZodSchema> = {
   get_coolest_cities: GetCoolestCitiesArgsSchema,
   get_current_time: GetCurrentTimeArgsSchema,
   greynoise_ip_address: GreynoiseIpAddressArgsSchema,
+  generate_image: GenerateImageArgsSchema,
 };
 
 /**
