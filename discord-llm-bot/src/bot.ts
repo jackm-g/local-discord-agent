@@ -212,19 +212,32 @@ function stripDataUris(content: string): string {
 }
 
 /**
- * Helper to remove sprite result markers from user-facing content
+ * Helper to remove image result markers from user-facing content
  * These markers are for internal parsing only
  */
 function cleanSpriteMarkers(content: string): string {
   const spriteMarker = "🖼️SPRITE_RESULT🖼️";
-  const markerIndex = content.indexOf(spriteMarker);
+  const xaiImageMarker = "🖼️XAI_IMAGE_RESULT🖼️";
   
-  if (markerIndex === -1) {
+  // Find the first occurrence of either marker
+  const spriteIndex = content.indexOf(spriteMarker);
+  const xaiIndex = content.indexOf(xaiImageMarker);
+  
+  let firstMarkerIndex = -1;
+  if (spriteIndex !== -1 && xaiIndex !== -1) {
+    firstMarkerIndex = Math.min(spriteIndex, xaiIndex);
+  } else if (spriteIndex !== -1) {
+    firstMarkerIndex = spriteIndex;
+  } else if (xaiIndex !== -1) {
+    firstMarkerIndex = xaiIndex;
+  }
+  
+  if (firstMarkerIndex === -1) {
     return content;
   }
   
   // Remove everything from the first marker onward
-  return content.substring(0, markerIndex).trim();
+  return content.substring(0, firstMarkerIndex).trim();
 }
 
 /**
@@ -436,32 +449,20 @@ client.on(Events.MessageCreate, async (message: Message) => {
         // Get text before the marker
         const textResponse = response.substring(0, xaiImageIndex).trim();
         
-        console.log("✅ Successfully parsed X.AI image result, creating embed...");
+        console.log("✅ Successfully parsed X.AI image result, sending images...");
         
         // Handle X.AI image results
         if (imageData.success && imageData.images && imageData.images.length > 0) {
           const images = imageData.images;
-          const primaryImage = images[0];
           
-          // Create embed for X.AI image
-          const embed = new EmbedBuilder()
-            .setColor(0x00d4aa) // X.AI brand color
-            .setTitle("🎨 Image Generated!")
-            .setDescription(cleanSpriteMarkers(textResponse) || "Your image has been created using X.AI's Grok-2-Vision-1212!")
-            .setImage(primaryImage.url);
+          // Send text response first
+          const cleanText = cleanSpriteMarkers(textResponse) || "Your image has been created! 🎨";
+          await message.reply(cleanText);
           
-          // If there are multiple images, add them as additional embeds
-          const embeds = [embed];
-          
-          for (let i = 1; i < images.length && i < 4; i++) { // Discord allows max 4 embeds
-            const additionalEmbed = new EmbedBuilder()
-              .setColor(0x00d4aa)
-              .setTitle(`🎨 Image ${i + 1}`)
-              .setImage(images[i].url);
-            embeds.push(additionalEmbed);
+          // Send each image URL directly - Discord will auto-render them
+          for (const image of images) {
+            await message.reply(image.url);
           }
-          
-          await message.reply({ embeds });
         } else {
           // Error case
           const errorMessage = imageData.error || "Failed to generate image";
