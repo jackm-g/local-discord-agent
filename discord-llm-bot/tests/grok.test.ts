@@ -1,10 +1,9 @@
 import { jest } from '@jest/globals';
 import axios from 'axios';
-import { GrokPlanner } from '../src/llm/grok';
+import { GrokPlanner } from '../src/llm/grok.js';
 
 // Mock axios
 jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('GrokPlanner Prompt Usage', () => {
   let grokPlanner: GrokPlanner;
@@ -18,7 +17,7 @@ describe('GrokPlanner Prompt Usage', () => {
       post: jest.fn(),
     };
     
-    mockedAxios.create.mockReturnValue(mockAxiosInstance);
+    (axios.create as any) = jest.fn().mockReturnValue(mockAxiosInstance);
     
     // Create GrokPlanner instance
     grokPlanner = new GrokPlanner();
@@ -264,7 +263,7 @@ describe('GrokPlanner Prompt Usage', () => {
 
   describe('API configuration', () => {
     it('should use correct API configuration', () => {
-      expect(mockedAxios.create).toHaveBeenCalledWith({
+      expect(axios.create).toHaveBeenCalledWith({
         baseURL: expect.any(String),
         headers: {
           Authorization: expect.stringContaining('Bearer'),
