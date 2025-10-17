@@ -173,51 +173,6 @@ The bot will:
 3. Execute tools via MCP servers
 4. Reply with results and images
 
-
-## Key Features
-
-### Bot Orchestrator
-- ✅ **Grok Planning** - Intelligent JSON-based tool selection
-- ✅ **MCP Protocol** - Standard tool execution via Model Context Protocol
-- ✅ **TypeScript** - Type-safe implementation with Zod validation
-- ✅ **Conversation Memory** - MongoDB-based per-channel history
-- ✅ **Result Caching** - Automatic deduplication of expensive operations
-- ✅ **Rate Limiting** - Per-user request throttling
-
-### PixelLab Integration
-- ✅ **Sprite Generation** - AI-powered pixel art from text prompts
-- ✅ **Sprite Rotation** - Multi-angle sprite sheets
-- ✅ **Sprite Animation** - Animated GIFs with customizable FPS
-- ✅ **Slash Commands** - `/sprite`, `/rotate`, `/animate`
-
-### X.AI Image Generation
-- ✅ **High-Quality Images** - Generate realistic images using Grok-2-Vision-1212
-- ✅ **Multiple Sizes** - Square, portrait, and landscape formats
-- ✅ **Style Options** - Vivid or natural image styles
-- ✅ **Quality Control** - Standard or HD quality options
-- ✅ **Multiple Images** - Generate up to 4 variations at once
-
-### Utility Tools
-- ✅ **Weather Information** - Location-based weather
-- ✅ **Current Time** - Time lookup
-- ✅ **IP Intelligence** - GreyNoise threat data
-- ✅ **Extensible** - Easy to add new MCP tools
-
-### Discord Integration
-- ✅ **@Mention Responses** - Natural conversation
-- ✅ **Slash Commands** - Direct tool access
-- ✅ **Per-Channel Threads** - Shared conversation history
-- ✅ **Typing Indicators** - Real-time feedback
-- ✅ **Error Handling** - User-friendly messages
-- ✅ **Image Embeds** - Beautiful sprite previews
-
-
-
-The bot will automatically spawn MCP servers as child processes.
-
-### Using Docker (Coming Soon)
-Docker Compose configuration for easy deployment is planned for future updates.
-
 ## Environment Variables
 
 ### `discord-llm-bot/.env`

@@ -13,9 +13,9 @@
     "start": "node dist/bot.js",
     "dev": "tsc && node dist/bot.js",
     "watch": "tsc --watch",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test": "node --experimental-vm-modules node_modules/.bin/jest",
+    "test:watch": "node --experimental-vm-modules node_modules/.bin/jest --watch",
+    "test:coverage": "node --experimental-vm-modules node_modules/.bin/jest --coverage"
   },
   "author": "Jack",
   "license": "None",
