@@ -342,9 +342,94 @@ client.on(Events.MessageCreate, async (message: Message) => {
     const xaiImageMarker = "🖼️XAI_IMAGE_RESULT🖼️";
     const xaiImageIndex = response.lastIndexOf(xaiImageMarker);
     
-    if (spriteIndex !== -1) {
+    // Check X.AI images first (takes priority over sprite embeds)
+    if (xaiImageIndex !== -1) {
       try {
-        // Extract JSON string after the marker
+        // Extract JSON string after the X.AI image marker
+        const jsonStart = xaiImageIndex + xaiImageMarker.length;
+        const afterMarker = response.substring(jsonStart);
+        
+        // Parse JSON more carefully - find the actual end of the JSON object
+        let jsonString = afterMarker.trim();
+        
+        // If there's content after the JSON, try to find where the JSON object actually ends
+        // by finding the matching closing brace
+        if (jsonString.startsWith('{')) {
+          let braceCount = 0;
+          let inString = false;
+          let escapeNext = false;
+          let jsonEndIndex = -1;
+          
+          for (let i = 0; i < jsonString.length; i++) {
+            const char = jsonString[i];
+            
+            if (escapeNext) {
+              escapeNext = false;
+              continue;
+            }
+            
+            if (char === '\\') {
+              escapeNext = true;
+              continue;
+            }
+            
+            if (char === '"') {
+              inString = !inString;
+              continue;
+            }
+            
+            if (!inString) {
+              if (char === '{') {
+                braceCount++;
+              } else if (char === '}') {
+                braceCount--;
+                if (braceCount === 0) {
+                  jsonEndIndex = i + 1;
+                  break;
+                }
+              }
+            }
+          }
+          
+          if (jsonEndIndex !== -1) {
+            jsonString = jsonString.substring(0, jsonEndIndex);
+          }
+        }
+        
+        // Parse the X.AI image data
+        const imageData = JSON.parse(jsonString);
+        
+        // Get text before the marker
+        const textResponse = response.substring(0, xaiImageIndex).trim();
+        
+        console.log("✅ Successfully parsed X.AI image result, sending image URLs...");
+        
+        // Handle X.AI image results
+        if (imageData.success && imageData.images && imageData.images.length > 0) {
+          const images = imageData.images;
+          
+          // Send text response first
+          const cleanText = cleanSpriteMarkers(textResponse) || "Your image has been created! 🎨";
+          const firstReply = await message.reply(cleanText);
+          
+          // Send each image URL separately so Discord auto-embeds them
+          for (const image of images) {
+            await firstReply.reply(image.url);
+          }
+        } else {
+          // Error case
+          const cleanText = cleanSpriteMarkers(textResponse);
+          await message.reply(cleanText || "I tried to create an image but encountered an issue.");
+        }
+      } catch (e) {
+        console.error("⚠️ Failed to parse X.AI image result, showing clean fallback:", e);
+        // Fallback: remove everything from the X.AI image marker onward
+        const cleanResponse = cleanSpriteMarkers(response);
+        await message.reply(cleanResponse || "Your image was created, but I had trouble formatting the result!");
+      }
+    } else if (spriteIndex !== -1) {
+      try {
+        // Extract JSON string after the sprite marker
         const jsonStart = spriteIndex + spriteMarker.length;
         const afterMarker = response.substring(jsonStart);
         
@@ -471,90 +556,6 @@ client.on(Events.MessageCreate, async (message: Message) => {
         // Fallback: remove everything from the sprite marker onward
         const cleanResponse = cleanSpriteMarkers(response);
         await message.reply(cleanResponse || "Your sprite has been created, but I had trouble formatting the result!");
-      }
-    } else if (xaiImageIndex !== -1) {
-      try {
-        // Extract JSON string after the X.AI image marker
-        const jsonStart = xaiImageIndex + xaiImageMarker.length;
-        const afterMarker = response.substring(jsonStart);
-        
-        // Parse JSON more carefully - find the actual end of the JSON object
-        let jsonString = afterMarker.trim();
-        
-        // If there's content after the JSON, try to find where the JSON object actually ends
-        // by finding the matching closing brace
-        if (jsonString.startsWith('{')) {
-          let braceCount = 0;
-          let inString = false;
-          let escapeNext = false;
-          let jsonEndIndex = -1;
-          
-          for (let i = 0; i < jsonString.length; i++) {
-            const char = jsonString[i];
-            
-            if (escapeNext) {
-              escapeNext = false;
-              continue;
-            }
-            
-            if (char === '\\') {
-              escapeNext = true;
-              continue;
-            }
-            
-            if (char === '"') {
-              inString = !inString;
-              continue;
-            }
-            
-            if (!inString) {
-              if (char === '{') {
-                braceCount++;
-              } else if (char === '}') {
-                braceCount--;
-                if (braceCount === 0) {
-                  jsonEndIndex = i + 1;
-                  break;
-                }
-              }
-            }
-          }
-          
-          if (jsonEndIndex !== -1) {
-            jsonString = jsonString.substring(0, jsonEndIndex);
-          }
-        }
-        
-        // Parse the X.AI image data
-        const imageData = JSON.parse(jsonString);
-        
-        // Get text before the marker
-        const textResponse = response.substring(0, xaiImageIndex).trim();
-        
-        console.log("✅ Successfully parsed X.AI image result, sending images...");
-        
-        // Handle X.AI image results
-        if (imageData.success && imageData.images && imageData.images.length > 0) {
-          const images = imageData.images;
-          
-          // Send text response first
-          const cleanText = cleanSpriteMarkers(textResponse) || "Your image has been created! 🎨";
-          await message.reply(cleanText);
-          
-          // Send each image URL directly - Discord will auto-render them
-          for (const image of images) {
-            await message.reply(image.url);
-          }
-        } else {
-          // Error case
-          const errorMessage = imageData.error || "Failed to generate image";
-          await message.reply(`I tried to generate an image, but encountered an issue: ${errorMessage}`);
-        }
-      } catch (e) {
-        console.error("⚠️ Failed to parse X.AI image result, showing clean fallback:", e);
-        // Fallback: remove everything from the X.AI image marker onward
-        const cleanResponse = response.substring(0, xaiImageIndex).trim();
-        await message.reply(cleanResponse || "Your image has been generated, but I had trouble formatting the result!");
       }
     } else {
       // Reply with plain text (clean any sprite markers)
