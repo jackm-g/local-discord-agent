@@ -348,11 +348,52 @@ client.on(Events.MessageCreate, async (message: Message) => {
         const jsonStart = spriteIndex + spriteMarker.length;
         const afterMarker = response.substring(jsonStart);
         
-        // Find the end of the JSON - look for the next marker or newline followed by non-JSON
-        const nextMarker = afterMarker.indexOf(spriteMarker);
-        const jsonString = nextMarker !== -1 
-          ? afterMarker.substring(0, nextMarker).trim()
-          : afterMarker.trim();
+        // Parse JSON more carefully - find the actual end of the JSON object
+        let jsonString = afterMarker.trim();
+        
+        // If there's content after the JSON, try to find where the JSON object actually ends
+        // by finding the matching closing brace
+        if (jsonString.startsWith('{')) {
+          let braceCount = 0;
+          let inString = false;
+          let escapeNext = false;
+          let jsonEndIndex = -1;
+          
+          for (let i = 0; i < jsonString.length; i++) {
+            const char = jsonString[i];
+            
+            if (escapeNext) {
+              escapeNext = false;
+              continue;
+            }
+            
+            if (char === '\\') {
+              escapeNext = true;
+              continue;
+            }
+            
+            if (char === '"') {
+              inString = !inString;
+              continue;
+            }
+            
+            if (!inString) {
+              if (char === '{') {
+                braceCount++;
+              } else if (char === '}') {
+                braceCount--;
+                if (braceCount === 0) {
+                  jsonEndIndex = i + 1;
+                  break;
+                }
+              }
+            }
+          }
+          
+          if (jsonEndIndex !== -1) {
+            jsonString = jsonString.substring(0, jsonEndIndex);
+          }
+        }
         
         // Parse the sprite data
         const spriteData = JSON.parse(jsonString);
@@ -437,11 +478,52 @@ client.on(Events.MessageCreate, async (message: Message) => {
         const jsonStart = xaiImageIndex + xaiImageMarker.length;
         const afterMarker = response.substring(jsonStart);
         
-        // Find the end of the JSON - look for the next marker or newline followed by non-JSON
-        const nextMarker = afterMarker.indexOf(xaiImageMarker);
-        const jsonString = nextMarker !== -1 
-          ? afterMarker.substring(0, nextMarker).trim()
-          : afterMarker.trim();
+        // Parse JSON more carefully - find the actual end of the JSON object
+        let jsonString = afterMarker.trim();
+        
+        // If there's content after the JSON, try to find where the JSON object actually ends
+        // by finding the matching closing brace
+        if (jsonString.startsWith('{')) {
+          let braceCount = 0;
+          let inString = false;
+          let escapeNext = false;
+          let jsonEndIndex = -1;
+          
+          for (let i = 0; i < jsonString.length; i++) {
+            const char = jsonString[i];
+            
+            if (escapeNext) {
+              escapeNext = false;
+              continue;
+            }
+            
+            if (char === '\\') {
+              escapeNext = true;
+              continue;
+            }
+            
+            if (char === '"') {
+              inString = !inString;
+              continue;
+            }
+            
+            if (!inString) {
+              if (char === '{') {
+                braceCount++;
+              } else if (char === '}') {
+                braceCount--;
+                if (braceCount === 0) {
+                  jsonEndIndex = i + 1;
+                  break;
+                }
+              }
+            }
+          }
+          
+          if (jsonEndIndex !== -1) {
+            jsonString = jsonString.substring(0, jsonEndIndex);
+          }
+        }
         
         // Parse the X.AI image data
         const imageData = JSON.parse(jsonString);
