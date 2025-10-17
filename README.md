@@ -39,8 +39,6 @@ Python MCP server wrapping utility tools:
 - 🔍 GreyNoise IP intelligence
 - 🏙️ Coolest cities lookup
 
-### 5. **Legacy Agent** (`basicagent/` - archived)
-Previous LangGraph-based implementation (kept for reference)
 
 ## Architecture
 
@@ -169,24 +167,12 @@ npm start
 @YourBot check IP 8.8.8.8
 ```
 
-**Using slash commands:**
-```
-/sprite prompt:"dragon breathing fire" size:32x32
-/rotate sprite_id:abc123 angles:0,90,180,270
-/animate sprite_id:abc123 fps:12 loop:true
-```
-
 The bot will:
 1. Show typing indicator
 2. Plan with Grok whether to use tools
 3. Execute tools via MCP servers
 4. Reply with results and images
 
-## Detailed Documentation
-
-- **Migration Guide**: [`MIGRATION.md`](MIGRATION.md) - How to migrate from old architecture
-- **Agent API (archived)**: [`basicagent/README.md`](basicagent/README.md) - Old LangGraph implementation
-- **MCP Bot Orchestrator Plan**: [`mcp-bot-orchestrator.plan.md`](mcp-bot-orchestrator.plan.md)
 
 ## Key Features
 
@@ -225,28 +211,7 @@ The bot will:
 - ✅ **Error Handling** - User-friendly messages
 - ✅ **Image Embeds** - Beautiful sprite previews
 
-## Running in Production
 
-### Using PM2 (Recommended)
-
-**Build everything:**
-```bash
-# Build PixelLab MCP server
-cd mcp-servers/pixellab
-npm run build
-
-# Build Discord bot
-cd ../../discord-llm-bot
-npm run build
-```
-
-**Start with PM2:**
-```bash
-cd discord-llm-bot
-pm2 start dist/bot.js --name discord-bot
-pm2 save
-pm2 startup
-```
 
 The bot will automatically spawn MCP servers as child processes.
 
@@ -315,90 +280,6 @@ Docker Compose configuration for easy deployment is planned for future updates.
 - greynoise - IP intelligence
 - requests - HTTP client
 
-### Project Structure
-
-```
-local-discord-agent/
-├── discord-llm-bot/               # Discord Bot Orchestrator (TypeScript)
-│   ├── src/
-│   │   ├── bot.ts                # Main orchestration logic
-│   │   ├── config.ts             # Configuration
-│   │   ├── types.ts              # TypeScript types
-│   │   ├── llm/
-│   │   │   └── grok.ts          # Grok planner
-│   │   ├── mcp/
-│   │   │   └── client.ts        # MCP client manager
-│   │   ├── storage/
-│   │   │   ├── mongo.ts         # Conversation persistence
-│   │   │   └── cache.ts         # Result caching
-│   │   ├── validation/
-│   │   │   └── schemas.ts       # Zod schemas
-│   │   └── commands/
-│   │       ├── definitions.ts   # Slash command definitions
-│   │       └── register.ts      # Command registration
-│   ├── package.json
-│   └── tsconfig.json
-│
-├── mcp-servers/
-│   ├── pixellab/                 # PixelLab MCP Server (TypeScript)
-│   │   ├── src/
-│   │   │   ├── server.ts        # MCP server implementation
-│   │   │   ├── pixellab-client.ts  # HTTP client
-│   │   │   ├── schemas.ts       # Zod schemas
-│   │   │   └── types.ts         # TypeScript types
-│   │   └── package.json
-│   │
-│   └── tools-python/             # Python Tools MCP Server
-│       ├── server.py            # MCP server
-│       ├── tools.py             # Tool implementations
-│       └── requirements.txt
-│
-├── basicagent/                   # Legacy (archived)
-│   └── archive/
-│       └── agent_langgraph.py   # Old implementation
-│
-├── MIGRATION.md                  # Migration guide
-└── README.md                     # This file
-```
-
-## Troubleshooting
-
-### Bot won't start
-- ✅ Check all environment variables are set correctly
-- ✅ Verify MongoDB is running: `mongosh $MONGO_URI`
-- ✅ Ensure TypeScript compiled: `npm run build` in both bot and pixellab dirs
-- ✅ Check Node.js version: `node --version` (should be 18+)
-
-### MCP servers not spawning
-- ✅ Check build output exists: `ls discord-llm-bot/mcp-servers/pixellab/dist/`
-- ✅ Verify Python 3 available: `which python3`
-- ✅ Check paths in `discord-llm-bot/src/config.ts`
-- ✅ Look for stderr output in bot logs
-
-### Bot doesn't respond
-- ✅ Enable "Message Content Intent" in Discord Developer Portal
-- ✅ Verify bot has proper permissions in your server
-- ✅ Check bot logs for errors
-- ✅ Test with slash commands first (easier to debug)
-
-### Tool calls failing
-- ✅ Verify API keys: `PIXELLAB_API_KEY`, `GROK_API_KEY`
-- ✅ Check validation errors in logs
-- ✅ Test Grok API directly: `curl https://api.x.ai/v1/models -H "Authorization: Bearer $GROK_API_KEY"`
-- ✅ Check rate limits aren't exceeded
-
-### Grok not planning correctly
-- ✅ Verify GROK_API_KEY is valid
-- ✅ Check GROK_MODEL is supported
-- ✅ Look for JSON parsing errors in logs
-- ✅ Increase GROK_MAX_TOKENS if responses are cut off
-
-### High latency
-- Grok API calls typically take 1-2 seconds
-- PixelLab sprite generation can take 10-30 seconds
-- Use caching to avoid redundant calls
-- Check network latency to APIs
-
 ## Continuous Integration
 
 This project uses GitHub Actions for automated testing on every push to the main branch.
@@ -426,26 +307,4 @@ npm run test:watch     # Run tests in watch mode
 npm run test:coverage  # Generate coverage report
 ```
 
-## Contributing
-
-Contributions welcome! Areas for improvement:
-- [ ] Add more MCP tools (web search, calculator, code execution)
-- [ ] Implement streaming responses from Grok
-- [ ] Add sprite editing tools (colors, effects)
-- [ ] Create Docker Compose setup
-- [x] Add comprehensive test suite
-- [ ] Implement conversation summarization for long histories
-- [ ] Add web interface using same MCP servers
-- [ ] Support OpenAI/Claude as alternative to Grok
-- [ ] Add admin commands for bot management
-
 ## License
-
-This project is maintained by Jack for personal and educational use.
-
-## Acknowledgments
-
-- OpenAI for ChatGPT API
-- LangChain team for LangGraph
-- Discord.js community
-- GreyNoise for IP intelligence API 
