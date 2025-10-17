@@ -25,7 +25,7 @@ export class XAIImageClient {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "grok-2-vision-1212",
+          model: "grok-2-image-1212", // Correct X.AI image generation model
           prompt: args.prompt,
           n: args.n,
           response_format: args.response_format,

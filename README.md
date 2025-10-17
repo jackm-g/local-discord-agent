@@ -399,6 +399,33 @@ local-discord-agent/
 - Use caching to avoid redundant calls
 - Check network latency to APIs
 
+## Continuous Integration
+
+This project uses GitHub Actions for automated testing on every push to the main branch.
+
+### CI Workflow Features:
+- ✅ **Automated Testing**: Runs Jest unit tests on Node.js 18.x and 20.x
+- ✅ **TypeScript Compilation**: Ensures code compiles without errors
+- ✅ **Test Coverage**: Generates coverage reports for all test suites
+- ✅ **Multi-Node Testing**: Tests compatibility across Node.js versions
+- ✅ **Artifact Upload**: Saves test results and coverage reports
+
+### Test Coverage:
+The test suite includes comprehensive validation of:
+- **YAML Configuration**: Validates `prompts.yaml` structure and content
+- **Prompt Loading**: Tests YAML-to-config loading with fallbacks
+- **Placeholder Replacement**: Verifies `{BOT_NAME}` and `{TOOL_DESCRIPTIONS}` substitution
+- **Error Handling**: Tests graceful fallbacks when YAML files are missing/corrupted
+- **Integration Testing**: Validates end-to-end prompt usage in GrokPlanner
+
+### Running Tests Locally:
+```bash
+cd discord-llm-bot
+npm test              # Run all tests
+npm run test:watch     # Run tests in watch mode
+npm run test:coverage  # Generate coverage report
+```
+
 ## Contributing
 
 Contributions welcome! Areas for improvement:
@@ -406,7 +433,7 @@ Contributions welcome! Areas for improvement:
 - [ ] Implement streaming responses from Grok
 - [ ] Add sprite editing tools (colors, effects)
 - [ ] Create Docker Compose setup
-- [ ] Add comprehensive test suite
+- [x] Add comprehensive test suite
 - [ ] Implement conversation summarization for long histories
 - [ ] Add web interface using same MCP servers
 - [ ] Support OpenAI/Claude as alternative to Grok

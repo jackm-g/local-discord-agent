@@ -12,21 +12,29 @@
     "build": "tsc",
     "start": "node dist/bot.js",
     "dev": "tsc && node dist/bot.js",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "author": "Jack",
   "license": "None",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
+    "@types/js-yaml": "^4.0.9",
+    "axios": "^1.7.2",
     "discord.js": "^14.17.2",
     "dotenv": "^16.4.5",
+    "js-yaml": "^4.1.0",
     "mongodb": "^6.3.0",
-    "zod": "^3.23.8",
-    "axios": "^1.7.2"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.14.2",
-    "typescript": "^5.4.5",
-    "nodemon": "^3.0.0"
+    "jest": "^30.2.0",
+    "nodemon": "^3.0.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.4.5"
   }
 }

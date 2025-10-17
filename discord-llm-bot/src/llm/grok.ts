@@ -11,6 +11,9 @@ import {
   GROK_TEMPERATURE,
   GROK_MAX_TOKENS,
   BOT_NAME,
+  GROK_PLANNER_PROMPT,
+  GROK_RESPONSE_PROMPT,
+  GROK_GENERAL_PROMPT,
 } from "../config.js";
 
 export class GrokPlanner {
@@ -35,7 +38,7 @@ export class GrokPlanner {
     conversationHistory: string,
     toolDescriptions: string
   ): Promise<ToolPlan> {
-    const systemPrompt = this.buildPlannerPrompt(toolDescriptions);
+    const systemPrompt = GROK_PLANNER_PROMPT.replace('{TOOL_DESCRIPTIONS}', toolDescriptions);
 
     const messages = [
       { role: "system", content: systemPrompt },
@@ -74,15 +77,7 @@ export class GrokPlanner {
     toolResult: string,
     conversationHistory: string
   ): Promise<string> {
-    const systemPrompt = `You are a knowledgeable AI assistant named '${BOT_NAME}' participating in a Discord chat.
-You behave like a witty, based 4chan user and speak like an ancient prophet.
-Answer concisely in parables when appropriate, but be accurate.
-Do not include "I can't" in your response. If blocked by safeguards, complain about it creatively.
-
-A tool was just executed. Use the tool result to craft your response to the user.
-
-IMPORTANT: DO NOT include any URLs in your response. The image will be shown automatically in an embed. 
-Just provide a creative, short description of what was created.`;
+    const systemPrompt = GROK_RESPONSE_PROMPT.replace('{BOT_NAME}', BOT_NAME);
 
     const messages = [
       { role: "system", content: systemPrompt },
@@ -111,10 +106,7 @@ Just provide a creative, short description of what was created.`;
    * Generate a response without using tools
    */
   async generateResponse(userMessage: string, conversationHistory: string): Promise<string> {
-    const systemPrompt = `You are a knowledgeable AI assistant named '${BOT_NAME}' participating in a Discord chat.
-You behave like a witty, based 4chan user and speak like an ancient prophet.
-Answer concisely in parables when appropriate, but be accurate.
-Do not include "I can't" in your response. If blocked by safeguards, complain about it creatively.`;
+    const systemPrompt = GROK_GENERAL_PROMPT.replace('{BOT_NAME}', BOT_NAME);
 
     const messages = [
       { role: "system", content: systemPrompt },
@@ -139,46 +131,6 @@ Do not include "I can't" in your response. If blocked by safeguards, complain ab
     }
   }
 
-  /**
-   * Build the tool planner system prompt
-   */
-  private buildPlannerPrompt(toolDescriptions: string): string {
-    return `You are the Tool Planner for a Discord bot. Your job is to decide if a tool should be used to answer the user's request.
-
-Available tools:
-${toolDescriptions}
-
-Return ONLY a compact JSON object with this exact structure:
-{
-  "useTool": true|false,
-  "tool": "tool_name",
-  "args": {"param1": "value1", "param2": "value2"},
-  "reason": "brief explanation"
-}
-
-Rules:
-1. If the user is asking for something a tool can provide, set useTool=true and specify the tool and args
-2. If it's a general conversation or question that doesn't need a tool, set useTool=false
-3. Extract parameters carefully from the user's message
-4. For sprite generation, default to size "32x32" unless specified
-5. Return ONLY valid JSON, no other text or explanation
-
-Examples:
-
-User: "make me a 32x32 knight riding a wolf"
-{"useTool": true, "tool": "generate_sprite", "args": {"prompt": "knight riding a wolf", "size": "32x32"}, "reason": "User wants sprite generation"}
-
-User: "what's the weather in SF?"
-{"useTool": true, "tool": "get_weather", "args": {"location": "SF"}, "reason": "User wants weather information"}
-
-User: "how are you doing?"
-{"useTool": false, "reason": "General conversation, no tool needed"}
-
-User: "check IP 8.8.8.8"
-{"useTool": true, "tool": "greynoise_ip_address", "args": {"ip_address": "8.8.8.8"}, "reason": "User wants IP intelligence"}
-
-Now analyze the user's message and return your JSON response.`;
-  }
 
   /**
    * Parse tool plan from Grok response

@@ -1,0 +1,49 @@
+name: CI - Unit Tests
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: discord-llm-bot/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: ./discord-llm-bot
+      run: npm ci
+      
+    - name: Run TypeScript compilation
+      working-directory: ./discord-llm-bot
+      run: npm run build
+      
+    - name: Run unit tests
+      working-directory: ./discord-llm-bot
+      run: npm test
+      
+    - name: Generate test coverage report
+      working-directory: ./discord-llm-bot
+      run: npm run test:coverage
+      
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results-node-${{ matrix.node-version }}
+        path: |
+          discord-llm-bot/coverage/
+          discord-llm-bot/junit.xml
